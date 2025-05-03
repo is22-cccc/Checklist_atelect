@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Чек-лист УЗ-мониторинга</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      padding-top: 60px;     /* место под таймер */
+      padding-bottom: 200px; /* место под клавиатуру */
+      background-color: #f4f4f4;
+    }
+    .timer {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: #0088cc;
+      color: #fff;
+      text-align: center;
+      padding: 10px 0;
+      font-size: 18px;
+      font-weight: bold;
+      z-index: 1000;
+    }
+    .hidden { display: none; }
+    .section {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    h2, h3 { margin-top: 0; }
+    label { display: block; margin: 8px 0 4px; }
+    input[type="text"], input[type="number"], select {
+      width: 100%; padding: 8px; margin-bottom: 12px; box-sizing: border-box;
+    }
+    button {
+      padding: 10px 20px; margin: 6px 4px 0 0;
+      border: none; border-radius: 5px; background: #0088cc; color: #fff;
+      font-size: 16px; cursor: pointer;
+    }
+    button.secondary { background: #666; }
+    p.result { font-weight: bold; margin: 4px 0 12px; }
+  </style>
+</head>
+<body>
+  <!-- Таймер -->
+  <div id="timer" class="timer hidden">00:00</div>
+
+  <!-- Шаг 1: Исходные данные -->
+  <div id="step1" class="section">
+    <h2>Исходные данные</h2>
+    <label for="block_select">Выберите блок:</label>
+    <select id="block_select">
+      <option value="1">Блок 1 Базовый протокол</option>
+      <option value="2">Блок 2 Продвинутый протокол</option>
+      <option value="3">Блок 3 ЭХОКГ</option>
+      <option value="4">Блок 4 Полный протокол</option>
+      <option value="5">Блок 5 УЗИ лёгких</option>
+    </select>
+
+    <label for="patient_id">Номер И/Б (ID пациента):</label>
+    <input type="text" id="patient_id" placeholder="ID пациента">
+
+    <label for="patient_age">Возраст пациента:</label>
+    <input type="number" id="patient_age" placeholder="Лет">
+
+    <button type="button" id="step1_next">Далее</button>
+  </div>
+
+  <!-- Шаг 2: Блок 1 -->
+  <div id="form1" class="section hidden">
+    <h2>Блок 1: Базовый протокол</h2>
+
+    <!-- IJV -->
+    <h3>Вариабельность диаметра внутренней яремной вены при дыхании</h3>
+    <label for="ven_max">Max (мм):</label>
+    <input type="number" id="ven_max" step="0.1">
+    <label for="ven_min">Min (мм):</label>
+    <input type="number" id="ven_min" step="0.1">
+    <p id="ven_ratio_result" class="result"></p>
+    <label><input type="checkbox" id="ven_error"> Технические погрешности</label>
+
+    <!-- CCA -->
+    <h3>Вариабельность пиковой скорости в общей сонной артерии при дыхании</h3>
+    <label for="car_max">Max (мм):</label>
+    <input type="number" id="car_max" step="0.1">
+    <label for="car_min">Min (мм):</label>
+    <input type="number" id="car_min" step="0.1">
+    <p id="car_ratio_result" class="result"></p>
+    <label><input type="checkbox" id="car_error"> Технические погрешности</label>
+
+    <!-- Flow time -->
+    <h3>Корректированное время потока на общей сонной артерии</h3>
+    <label for="flow_time">Время (мс):</label>
+    <input type="number" id="flow_time" step="0.1">
+    <label for="heart_rate">ЧСС:</label>
+    <input type="number" id="heart_rate">
+    <p id="time_corrected_result" class="result"></p>
+    <label><input type="checkbox" id="time_error"> Технические погрешности</label>
+
+    <!-- Навигация -->
+    <button type="button" class="secondary" id="step1_back">Назад</button>
+    <button type="button" id="submit_button">Завершить</button>
+  </div>
+
+<!-- Шаг 3: Блок 2 -->
+  <div id="form2" class="section hidden">
+    <h2>Блок 2: Продвинутый протокол</h2>
+
+    <!-- IJV -->
+    <h3>Вариабельность диаметра внутренней яремной вены при дыхании</h3>
+    <label for="b2_ven_max">Max (мм):</label>
+    <input type="number" id="b2_ven_max" step="0.1">
+    <label for="b2_ven_min">Min (мм):</label>
+    <input type="number" id="b2_ven_min" step="0.1">
+    <p id="b2_ven_ratio_result" class="result"></p>
+    <label><input type="checkbox" id="b2_ven_error"> Технические погрешности</label>
+
+    <!-- НПВ -->
+    <h3>Вариабельность диаметра нижней полой вены при дыхании</h3>
+    <label for="b2_venp_max">Max (мм):</label>
+    <input type="number" id="b2_venp_max" step="0.1">
+    <label for="b2_venp_min">Min (мм):</label>
+    <input type="number" id="b2_venp_min" step="0.1">
+    <p id="b2_venp_ratio_result" class="result"></p>
+    <label><input type="checkbox" id="b2_venp_error"> Технические погрешности</label>
+    
+    <!-- CCA -->
+    <h3>Вариабельность пиковой скорости в общей сонной артерии при дыхании</h3>
+    <label for="b2_car_max">Max (мм):</label>
+    <input type="number" id="b2_car_max" step="0.1">
+    <label for="b2_car_min">Min (мм):</label>
+    <input type="number" id="b2_car_min" step="0.1">
+    <p id="b2_car_ratio_result" class="result"></p>
+    <label><input type="checkbox" id="b2_car_error"> Технические погрешности</label>
+
+    <!-- Flow time -->
+    <h3>Корректированное время потока на общей сонной артерии</h3>
+    <label for="b2_flow_time">Время (мс):</label>
+    <input type="number" id="b2_flow_time" step="0.1">
+    <label for="b2_heart_rate">ЧСС:</label>
+    <input type="number" id="b2_heart_rate">
+    <p id="b2_time_corrected_result" class="result"></p>
+    <label><input type="checkbox" id="b2_time_error"> Технические погрешности</label>
+
+    <!-- PA -->
+    <h3>Вариабельность пиковой скорости на плечевой артерии при дыхании</h3>
+    <label for="b2_carp_max">Max (мм):</label>
+    <input type="number" id="b2_carp_max" step="0.1">
+    <label for="b2_carp_min">Min (мм):</label>
+    <input type="number" id="b2_carp_min" step="0.1">
+    <p id="b2_carp_ratio_result" class="result"></p>
+    <label><input type="checkbox" id="b2_carp_error"> Технические погрешности</label> 
+    
+    <!-- Навигация -->
+    <button type="button" class="secondary" id="step1_back">Назад</button>
+    <button type="button" id="submit_button">Завершить</button>
+  </div>  
+
+   <!-- Шаг 4: Блок 3 -->
+  <div id="form3" class="section hidden">
+    <h2>Блок 3: ЭХОКГ</h2>
+
+    <!-- VTI_ЛЖ -->
+    <h3>Вариабельность VTI на выносящем тракте ЛЖ при дыхании</h3>
+    <label for="b3_vtil_max">Max (мм):</label>
+    <input type="number" id="b3_vtil_max" step="0.1">
+    <label for="b3_vtil_min">Min (мм):</label>
+    <input type="number" id="b3_vtil_min" step="0.1">
+    <p id="b3_vtil_ratio_result" class="result"></p>
+    <label><input type="checkbox" id="b3_vtil_error"> Технические погрешности</label>
+
+     <!-- VTI_ПЖ -->
+    <h3>Вариабельность VTI на легочной артерии при дыхании</h3>
+    <label for="b3_vtip_max">Max (мм):</label>
+    <input type="number" id="b3_vtip_max" step="0.1">
+    <label for="b3_vtip_min">Min (мм):</label>
+    <input type="number" id="b3_vtip_min" step="0.1">
+    <p id="b3_vtip_ratio_result" class="result"></p>
+    <label><input type="checkbox" id="b3_vtip_error"> Технические погрешности</label>
+    
+    <!-- Навигация -->
+    <button type="button" class="secondary" id="step1_back">Назад</button>
+    <button type="button" id="submit_button">Завершить</button>
+  </div>    
+
+  <!-- Шаг 5: Блок 4 -->
+  <div id="form4" class="section hidden">
+    <h2>Блок 4: Полный протокол</h2>
+
+     <!-- IJV -->
+    <h3>Вариабельность диаметра внутренней яремной вены при дыхании</h3>
+    <label for="b4_ven_max">Max (мм):</label>
+    <input type="number" id="b4_ven_max" step="0.1">
+    <label for="b4_ven_min">Min (мм):</label>
+    <input type="number" id="b4_ven_min" step="0.1">
+    <p id="b4_ven_ratio_result" class="result"></p>
+    <label><input type="checkbox" id="b4_ven_error"> Технические погрешности</label>
+
+    <!-- НПВ -->
+    <h3>Вариабельность диаметра нижней полой вены при дыхании</h3>
+    <label for="b4_venp_max">Max (мм):</label>
+    <input type="number" id="b4_venp_max" step="0.1">
+    <label for="b4_venp_min">Min (мм):</label>
+    <input type="number" id="b4_venp_min" step="0.1">
+    <p id="b4_venp_ratio_result" class="result"></p>
+    <label><input type="checkbox" id="b4_venp_error"> Технические погрешности</label>
+    
+    <!-- CCA -->
+    <h3>Вариабельность пиковой скорости в общей сонной артерии при дыхании</h3>
+    <label for="b4_car_max">Max (мм):</label>
+    <input type="number" id="b4_car_max" step="0.1">
+    <label for="b4_car_min">Min (мм):</label>
+    <input type="number" id="b4_car_min" step="0.1">
+    <p id="b4_car_ratio_result" class="result"></p>
+    <label><input type="checkbox" id="b4_car_error"> Технические погрешности</label>
+
+    <!-- Flow time -->
+    <h3>Корректированное время потока на общей сонной артерии</h3>
+    <label for="b4_flow_time">Время (мс):</label>
+    <input type="number" id="b4_flow_time" step="0.1">
+    <label for="b4_heart_rate">ЧСС:</label>
+    <input type="number" id="b4_heart_rate">
+    <p id="b4_time_corrected_result" class="result"></p>
+    <label><input type="checkbox" id="b4_time_error"> Технические погрешности</label>
+
+    <!-- PA -->
+    <h3>Вариабельность пиковой скорости на плечевой артерии при дыхании</h3>
+    <label for="b4_carp_max">Max (мм):</label>
+    <input type="number" id="b4_carp_max" step="0.1">
+    <label for="b4_carp_min">Min (мм):</label>
+    <input type="number" id="b4_carp_min" step="0.1">
+    <p id="b4_carp_ratio_result" class="result"></p>
+    <label><input type="checkbox" id="b4_carp_error"> Технические погрешности</label> 
+    
+    <!-- VTI_ЛЖ -->
+    <h3>Вариабельность VTI на выносящем тракте ЛЖ при дыхании</h3>
+    <label for="b4_vtil_max">Max (мм):</label>
+    <input type="number" id="b4_vtil_max" step="0.1">
+    <label for="b4_vtil_min">Min (мм):</label>
+    <input type="number" id="b4_vtil_min" step="0.1">
+    <p id="b4_vtil_ratio_result" class="result"></p>
+    <label><input type="checkbox" id="b4_vtil_error"> Технические погрешности</label>
+
+     <!-- VTI_ПЖ -->
+    <h3>Вариабельность VTI на легочной артерии при дыхании</h3>
+    <label for="b4_vtip_max">Max (мм):</label>
+    <input type="number" id="b4_vtip_max" step="0.1">
+    <label for="b4_vtip_min">Min (мм):</label>
+    <input type="number" id="b4_vtip_min" step="0.1">
+    <p id="b4_vtip_ratio_result" class="result"></p>
+    <label><input type="checkbox" id="b4_vtip_error"> Технические погрешности</label>
+    
+    <!-- Навигация -->
+    <button type="button" class="secondary" id="step1_back">Назад</button>
+    <button type="button" id="submit_button">Завершить</button>
+  </div>    
+  
+  <!-- Блок 5: УЗИ лёгких -->
+  <div id="form5" class="section hidden">
+    <h2>Блок 5: УЗИ лёгких</h2>
+
+    <h3>Справа</h3>
+    <label>Зона 1: 
+      <select id="lus_r1"><option value="" selected disabled hidden></option><option>0</option><option>1</option><option>2</option><option>3</option></select>
+    </label>
+    <label>Зона 2: <select id="lus_r2"><option value="" selected disabled hidden></option><option>0</option0></option><option>1</option><option>2</option><option>3</option></select></label>
+    <label>Зона 3: <select id="lus_r3"><option value="" selected disabled hidden></option><option>0</option><option>1</option><option>2</option><option>3</option></select></label>
+    <label>Зона 4: <select id="lus_r4"><option value="" selected disabled hidden></option><option>0</option><option>1</option><option>2</option><option>3</option></select></label>
+    <label>Зона 5: <select id="lus_r5"><option value="" selected disabled hidden></option><option>0</option><option>1</option><option>2</option><option>3</option></select></label>
+    <label>Зона 6: <select id="lus_r6"><option value="" selected disabled hidden></option><option>0</option><option>1</option><option>2</option><option>3</option></select></label>
+
+    <label><input type="checkbox" id="lus_r_cons"> Субплевральные консолидации</label>
+    <label><input type="checkbox" id="lus_r_pneumo"> Пневмоторакс</label>
+    <label><input type="checkbox" id="lus_r_hydro"> Гидроторакс</label>
+
+    <h3>Слева</h3>
+    <label>Зона 1: 
+      <select id="lus_l1"><option value="" selected disabled hidden></option><option>0</option><option>1</option><option>2</option><option>3</option></select>
+    </label>
+    <label>Зона 2: <select id="lus_l2"><option value="" selected disabled hidden></option><option>0</option><option>1</option><option>2</option><option>3</option></select></label>
+    <label>Зона 3: <select id="lus_l3"><option value="" selected disabled hidden></option><option>0</option><option>1</option><option>2</option><option>3</option></select></label>
+    <label>Зона 4: <select id="lus_l4"><option value="" selected disabled hidden></option><option>0</option><option>1</option><option>2</option><option>3</option></select></label>
+    <label>Зона 5: <select id="lus_l5"><option value="" selected disabled hidden></option><option>0</option><option>1</option><option>2</option><option>3</option></select></label>
+    <label>Зона 6: <select id="lus_l6"><option value="" selected disabled hidden></option><option>0</option><option>1</option><option>2</option><option>3</option></select></label>
+
+    <label><input type="checkbox" id="lus_l_cons"> Субплевральные консолидации</label>
+    <label><input type="checkbox" id="lus_l_pneumo"> Пневмоторакс</label>
+    <label><input type="checkbox" id="lus_l_hydro"> Гидроторакс</label>
+
+    <p id="lus_score" class="result"></p>
+
+     <label><input type="checkbox" id="lus_error"> Технические погрешности</label>
+    
+    <button class="secondary back" data-from="5">Назад</button>
+    <button type="button" id="submit_button" data-block="5">Завершить</button>
+
+  </div>
+  <script>
+    const webApp = Telegram.WebApp;
+    webApp.ready();
+
+    const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzpjfAA7nb_3WG9PMy_C45GRYaJG8XikUue-LVET3CGRzJr4O9lg5iZ9DoryEckUmNF/exec";
+    const formData = {};
+
+    let timerInterval, startTime;
+
+    // Скролл поля в центр при фокусе
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('focus', () => el.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+    });
+    
+// ==== LUS: подсчёт баллов по всем зонам ====
+function calcLusScore() {
+  let sum = 0;
+  for (let i = 1; i <= 6; i++) {
+    sum += parseInt(document.getElementById('lus_r' + i).value, 10) || 0;
+    sum += parseInt(document.getElementById('lus_l' + i).value, 10) || 0;
+  }
+  formData.lus_score = sum;
+  document.getElementById('lus_score').textContent = 'БАЛЛЫ ПО LUS – ' + sum;
+}
+// подвесим на изменения всех 12 селектов
+for (let i = 1; i <= 6; i++) {
+  ['lus_r', 'lus_l'].forEach(pref => {
+    document.getElementById(pref + i)
+      .addEventListener('change', calcLusScore);
+  });
+}
+    
+    function startTimer() {
+      startTime = Date.now();
+      document.getElementById('timer').classList.remove('hidden');
+      timerInterval = setInterval(updateTimer, 1000);
+    }
+    function stopTimer() {
+      clearInterval(timerInterval);
+      formData.total_time = Math.floor((Date.now() - startTime) / 1000);
+    }
+    function updateTimer() {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const m = String(Math.floor(elapsed / 60)).padStart(2,'0');
+      const s = String(elapsed % 60).padStart(2,'0');
+      document.getElementById('timer').textContent = `${m}:${s}`;
+    }
+document.querySelectorAll('.back').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const from = btn.dataset.from;
+    document.getElementById('form' + from).classList.add('hidden');
+    document.getElementById('step1').classList.remove('hidden');
+    clearInterval(timerInterval);
+    document.getElementById('timer').classList.add('hidden');
+  });
+});
+    
+    // Шаг 1 → Шаг 2
+   document.getElementById('step1_next').addEventListener('click', () => {
+  formData.block      = document.getElementById('block_select').value;
+  formData.patient_id = document.getElementById('patient_id').value.trim();
+  formData.age        = parseInt(document.getElementById('patient_age').value, 10);
+
+  if (!formData.patient_id) { alert("Введите номер И/Б пациента"); return; }
+  if (isNaN(formData.age))   { alert("Введите возраст пациента");       return; }
+
+  // Скрываем первый экран
+  document.getElementById('step1').classList.add('hidden');
+  // Показываем именно ту форму, чей номер совпадает с выбором
+  document.getElementById('form' + formData.block).classList.remove('hidden');
+  // Стартуем таймер
+  startTimer();
+});
+
+    document.getElementById('step1_back').addEventListener('click', () => {
+      document.getElementById('form1').classList.add('hidden');
+      document.getElementById('step1').classList.remove('hidden');
+      clearInterval(timerInterval);
+      document.getElementById('timer').classList.add('hidden');
+    });
+
+    // ===== IJV =====
+    function updateVenRatio() {
+      const max = parseFloat(document.getElementById('ven_max').value);
+      const min = parseFloat(document.getElementById('ven_min').value);
+      if (!isNaN(max) && !isNaN(min)) {
+        const ratio = (max - min) / ((max + min) / 2) * 100;
+        document.getElementById('ven_ratio_result')
+          .textContent = ratio.toFixed(1) + '% точка отсечения 18%';
+        formData.b1_ven_max   = max;
+        formData.b1_ven_min   = min;
+        formData.b1_ven_ratio = ratio;
+      }
+    }
+    document.getElementById('ven_max').addEventListener('input', updateVenRatio);
+    document.getElementById('ven_min').addEventListener('input', updateVenRatio);
+
+    // ===== CCA =====
+    function updateCarRatio() {
+      const max = parseFloat(document.getElementById('car_max').value);
+      const min = parseFloat(document.getElementById('car_min').value);
+      if (!isNaN(max) && !isNaN(min)) {
+        const ratio = (max - min) / ((max + min) / 2) * 100;
+        document.getElementById('car_ratio_result')
+          .textContent = ratio.toFixed(1) + '% точка отсечения 12%';
+        formData.b1_car_max   = max;
+        formData.b1_car_min   = min;
+        formData.b1_car_ratio = ratio;
+      }
+    }
+    document.getElementById('car_max').addEventListener('input', updateCarRatio);
+    document.getElementById('car_min').addEventListener('input', updateCarRatio);
+
+    // ===== Time =====
+    function updateTimeCorrected() {
+      const time = parseFloat(document.getElementById('flow_time').value);
+      const hr   = parseInt(document.getElementById('heart_rate').value, 10);
+      if (!isNaN(time) && !isNaN(hr)) {
+        const corrected = time + 1.3 * (hr - 60);
+        const threshold = formData.age < 65 ? 325 : 340;
+        document.getElementById('time_corrected_result')
+          .textContent = corrected.toFixed(1) + ' мс точка отсечения ' + threshold + ' мс';
+        formData.b1_time           = time;
+        formData.b1_hr             = hr;
+        formData.b1_time_corrected = corrected;
+      }
+    }
+    document.getElementById('flow_time').addEventListener('input', updateTimeCorrected);
+    document.getElementById('heart_rate').addEventListener('input', updateTimeCorrected);
+
+    // ===== Отправка =====
+    // вместо document.querySelectorAll('#submit_button').forEach(...)
+document.querySelectorAll('#submit_button').forEach(btn =>
+  btn.addEventListener('click', async () => {
+    const block = formData.block;
+    const form  = document.getElementById('form' + block);
+    
+    // Собираем все input (кроме чекбоксов) и select в этом блоке
+    const fields = form.querySelectorAll(
+      'input[type="text"], input[type="number"], select'
+    );
+    
+    // Проверяем, что у каждого есть непустое value
+    for (let field of fields) {
+      if (!field.value) {
+        alert(`Пожалуйста, заполните все поля блока ${block}`);
+        return;
+      }
+    }
+    if (formData.block === '1') {
+  formData.b1_ven_error  = document.getElementById('ven_error').checked;
+  formData.b1_car_error  = document.getElementById('car_error').checked;
+  formData.b1_time_error = document.getElementById('time_error').checked;
+}
+    // ===== Сбор флажков ошибок для блока 2 =====
+// В вашем submit-хендлере, где вы обрабатываете formData.block==='2', добавьте:
+if (formData.block === '2') {
+  formData.b2_ven_error   = document.getElementById('b2_ven_error').checked;
+  formData.b2_venp_error  = document.getElementById('b2_venp_error').checked;
+  formData.b2_car_error   = document.getElementById('b2_car_error').checked;
+  formData.b2_time_error  = document.getElementById('b2_time_error').checked;
+  formData.b2_carp_error  = document.getElementById('b2_carp_error').checked;
+}
+    if (formData.block === '3') {
+  formData.b3_vtil_error = document.getElementById('b3_vtil_error').checked;
+  formData.b3_vtip_error = document.getElementById('b3_vtip_error').checked;
+}
+
+    if (formData.block === '4') {
+  formData.b4_ven_error   = document.getElementById('b4_ven_error').checked;
+  formData.b4_venp_error  = document.getElementById('b4_venp_error').checked;
+  formData.b4_car_error   = document.getElementById('b4_car_error').checked;
+  formData.b4_time_error  = document.getElementById('b4_time_error').checked;
+  formData.b4_carp_error  = document.getElementById('b4_carp_error').checked;
+  formData.b4_vtil_error  = document.getElementById('b4_vtil_error').checked;
+  formData.b4_vtip_error  = document.getElementById('b4_vtip_error').checked;
+}
+    // Если дошли сюда — все поля заполнены, можно продолжить
+    if (formData.block === '5') {
+      // 1) Собираем значения зон
+      for (let i = 1; i <= 6; i++) {
+        formData['lus_r' + i] = document.getElementById('lus_r' + i).value;
+        formData['lus_l' + i] = document.getElementById('lus_l' + i).value;
+      }
+      // 2) Собираем статусы чекбоксов
+      formData.lus_r_cons   = document.getElementById('lus_r_cons').checked;
+      formData.lus_r_pneumo = document.getElementById('lus_r_pneumo').checked;
+      formData.lus_r_hydro  = document.getElementById('lus_r_hydro').checked;
+      formData.lus_l_cons   = document.getElementById('lus_l_cons').checked;
+      formData.lus_l_pneumo = document.getElementById('lus_l_pneumo').checked;
+      formData.lus_l_hydro  = document.getElementById('lus_l_hydro').checked;
+      formData.lus_error    = document.getElementById('lus_error').checked; // ← ВАЖНО!
+      calcLusScore();
+    } else {
+      // здесь можно оставить специфичные для блока 1 расчёты (если нужно)
+    }
+    
+    stopTimer();
+    formData.telegram_id = webApp.initDataUnsafe.user.id;
+    const url = WEBHOOK_URL + '?data=' + encodeURIComponent(JSON.stringify(formData));
+    await fetch(url, { method: 'GET', mode: 'no-cors' });
+    alert("✔️ Данные сохранены в таблицу\nОбщее время: " + formData.total_time + " сек.");
+    webApp.close();
+  })
+);
+// ===== Block2 IJV =====
+function updateB2VenRatio() {
+  const max = parseFloat(document.getElementById('b2_ven_max').value);
+  const min = parseFloat(document.getElementById('b2_ven_min').value);
+  if (!isNaN(max) && !isNaN(min)) {
+    const ratio = (max - min) / ((max + min) / 2) * 100;
+    document.getElementById('b2_ven_ratio_result')
+            .textContent = ratio.toFixed(1) + '% (IJV)';
+    formData.b2_ven_ratio = ratio;
+  }
+}
+document.getElementById('b2_ven_max').addEventListener('input', updateB2VenRatio);
+document.getElementById('b2_ven_min').addEventListener('input', updateB2VenRatio);
+
+// ===== Block2 IVC (НПВ) =====
+function updateB2IvpRatio() {
+  const max = parseFloat(document.getElementById('b2_venp_max').value);
+  const min = parseFloat(document.getElementById('b2_venp_min').value);
+  if (!isNaN(max) && !isNaN(min)) {
+    const ratio = (max - min) / ((max + min) / 2) * 100;
+    document.getElementById('b2_venp_ratio_result')
+            .textContent = ratio.toFixed(1) + '% (НПВ)';
+    formData.b2_venp_ratio = ratio;
+  }
+}
+document.getElementById('b2_venp_max').addEventListener('input', updateB2IvpRatio);
+document.getElementById('b2_venp_min').addEventListener('input', updateB2IvpRatio);
+
+// ===== Block2 CCA =====
+function updateB2CarRatio() {
+  const max = parseFloat(document.getElementById('b2_car_max').value);
+  const min = parseFloat(document.getElementById('b2_car_min').value);
+  if (!isNaN(max) && !isNaN(min)) {
+    const ratio = (max - min) / ((max + min) / 2) * 100;
+    document.getElementById('b2_car_ratio_result')
+            .textContent = ratio.toFixed(1) + '% (CCA)';
+    formData.b2_car_ratio = ratio;
+  }
+}
+document.getElementById('b2_car_max').addEventListener('input', updateB2CarRatio);
+document.getElementById('b2_car_min').addEventListener('input', updateB2CarRatio);
+
+// ===== Block2 Flow time =====
+function updateB2TimeCorrected() {
+  const time = parseFloat(document.getElementById('b2_flow_time').value);
+  const hr   = parseInt(document.getElementById('b2_heart_rate').value, 10);
+  if (!isNaN(time) && !isNaN(hr)) {
+    const corrected = time + 1.3 * (hr - 60);
+    const threshold = formData.age < 65 ? 325 : 340;
+    document.getElementById('b2_time_corrected_result')
+            .textContent = corrected.toFixed(1) + 
+                           ' мс (порог ' + threshold + ' мс)';
+    formData.b2_time_corrected = corrected;
+  }
+}
+document.getElementById('b2_flow_time').addEventListener('input', updateB2TimeCorrected);
+document.getElementById('b2_heart_rate').addEventListener('input', updateB2TimeCorrected);
+
+// ===== Block2 PA =====
+function updateB2CarpRatio() {
+  const max = parseFloat(document.getElementById('b2_carp_max').value);
+  const min = parseFloat(document.getElementById('b2_carp_min').value);
+  if (!isNaN(max) && !isNaN(min)) {
+    const ratio = (max - min) / ((max + min) / 2) * 100;
+    document.getElementById('b2_carp_ratio_result')
+            .textContent = ratio.toFixed(1) + '% (PA)';
+    formData.b2_carp_ratio = ratio;
+  }
+}
+document.getElementById('b2_carp_max').addEventListener('input', updateB2CarpRatio);
+document.getElementById('b2_carp_min').addEventListener('input', updateB2CarpRatio);
+
+
+    // ===== Block3 VTI ЛЖ =====
+function updateB3VtilRatio() {
+  const max = parseFloat(document.getElementById('b3_vtil_max').value);
+  const min = parseFloat(document.getElementById('b3_vtil_min').value);
+  if (!isNaN(max) && !isNaN(min)) {
+    const ratio = (max - min) / ((max + min) / 2) * 100;
+    document.getElementById('b3_vtil_ratio_result')
+            .textContent = ratio.toFixed(1) + '% (VTI ЛЖ)';
+    formData.b3_vtil_ratio = ratio;
+  }
+}
+document.getElementById('b3_vtil_max').addEventListener('input', updateB3VtilRatio);
+document.getElementById('b3_vtil_min').addEventListener('input', updateB3VtilRatio);
+
+// ===== Block3 VTI ПЖ =====
+function updateB3VtipRatio() {
+  const max = parseFloat(document.getElementById('b3_vtip_max').value);
+  const min = parseFloat(document.getElementById('b3_vtip_min').value);
+  if (!isNaN(max) && !isNaN(min)) {
+    const ratio = (max - min) / ((max + min) / 2) * 100;
+    document.getElementById('b3_vtip_ratio_result')
+            .textContent = ratio.toFixed(1) + '% (VTI ПЖ)';
+    formData.b3_vtip_ratio = ratio;
+  }
+}
+document.getElementById('b3_vtip_max').addEventListener('input', updateB3VtipRatio);
+document.getElementById('b3_vtip_min').addEventListener('input', updateB3VtipRatio);
+
+// ===== Block4 IJV =====
+function updateB4VenRatio() {
+  const max = parseFloat(document.getElementById('b4_ven_max').value);
+  const min = parseFloat(document.getElementById('b4_ven_min').value);
+  if (!isNaN(max) && !isNaN(min)) {
+    const ratio = (max - min) / ((max + min) / 2) * 100;
+    document.getElementById('b4_ven_ratio_result').textContent = ratio.toFixed(1) + '% (IJV)';
+    formData.b4_ven_ratio = ratio;
+  }
+}
+document.getElementById('b4_ven_max').addEventListener('input', updateB4VenRatio);
+document.getElementById('b4_ven_min').addEventListener('input', updateB4VenRatio);
+
+// ===== Block4 IVC =====
+function updateB4IvcRatio() {
+  const max = parseFloat(document.getElementById('b4_venp_max').value);
+  const min = parseFloat(document.getElementById('b4_venp_min').value);
+  if (!isNaN(max) && !isNaN(min)) {
+    const ratio = (max - min) / ((max + min) / 2) * 100;
+    document.getElementById('b4_venp_ratio_result').textContent = ratio.toFixed(1) + '% (IVC)';
+    formData.b4_venp_ratio = ratio;
+  }
+}
+document.getElementById('b4_venp_max').addEventListener('input', updateB4IvcRatio);
+document.getElementById('b4_venp_min').addEventListener('input', updateB4IvcRatio);
+
+// ===== Block4 CCA =====
+function updateB4CarRatio() {
+  const max = parseFloat(document.getElementById('b4_car_max').value);
+  const min = parseFloat(document.getElementById('b4_car_min').value);
+  if (!isNaN(max) && !isNaN(min)) {
+    const ratio = (max - min) / ((max + min) / 2) * 100;
+    document.getElementById('b4_car_ratio_result').textContent = ratio.toFixed(1) + '% (CCA)';
+    formData.b4_car_ratio = ratio;
+  }
+}
+document.getElementById('b4_car_max').addEventListener('input', updateB4CarRatio);
+document.getElementById('b4_car_min').addEventListener('input', updateB4CarRatio);
+
+// ===== Block4 Flow time =====
+function updateB4TimeCorrected() {
+  const time = parseFloat(document.getElementById('b4_flow_time').value);
+  const hr   = parseInt(document.getElementById('b4_heart_rate').value, 10);
+  if (!isNaN(time) && !isNaN(hr)) {
+    const corrected = time + 1.3 * (hr - 60);
+    const threshold = formData.age < 65 ? 325 : 340;
+    document.getElementById('b4_time_corrected_result')
+            .textContent = corrected.toFixed(1) + ' мс (порог ' + threshold + ' мс)';
+    formData.b4_time_corrected = corrected;
+  }
+}
+document.getElementById('b4_flow_time').addEventListener('input', updateB4TimeCorrected);
+document.getElementById('b4_heart_rate').addEventListener('input', updateB4TimeCorrected);
+
+// ===== Block4 PA =====
+function updateB4CarpRatio() {
+  const max = parseFloat(document.getElementById('b4_carp_max').value);
+  const min = parseFloat(document.getElementById('b4_carp_min').value);
+  if (!isNaN(max) && !isNaN(min)) {
+    const ratio = (max - min) / ((max + min) / 2) * 100;
+    document.getElementById('b4_carp_ratio_result').textContent = ratio.toFixed(1) + '% (PA)';
+    formData.b4_carp_ratio = ratio;
+  }
+}
+document.getElementById('b4_carp_max').addEventListener('input', updateB4CarpRatio);
+document.getElementById('b4_carp_min').addEventListener('input', updateB4CarpRatio);
+
+// ===== Block4 VTI ЛЖ =====
+function updateB4VtilRatio() {
+  const max = parseFloat(document.getElementById('b4_vtil_max').value);
+  const min = parseFloat(document.getElementById('b4_vtil_min').value);
+  if (!isNaN(max) && !isNaN(min)) {
+    const ratio = (max - min) / ((max + min) / 2) * 100;
+    document.getElementById('b4_vtil_ratio_result').textContent = ratio.toFixed(1) + '% (VTI ЛЖ)';
+    formData.b4_vtil_ratio = ratio;
+  }
+}
+document.getElementById('b4_vtil_max').addEventListener('input', updateB4VtilRatio);
+document.getElementById('b4_vtil_min').addEventListener('input', updateB4VtilRatio);
+
+// ===== Block4 VTI ПЖ =====
+function updateB4VtipRatio() {
+  const max = parseFloat(document.getElementById('b4_vtip_max').value);
+  const min = parseFloat(document.getElementById('b4_vtip_min').value);
+  if (!isNaN(max) && !isNaN(min)) {
+    const ratio = (max - min) / ((max + min) / 2) * 100;
+    document.getElementById('b4_vtip_ratio_result').textContent = ratio.toFixed(1) + '% (VTI ПЖ)';
+    formData.b4_vtip_ratio = ratio;
+  }
+}
+document.getElementById('b4_vtip_max').addEventListener('input', updateB4VtipRatio);
+document.getElementById('b4_vtip_min').addEventListener('input', updateB4VtipRatio);
+    
+  </script>
+</body>
+</html>
