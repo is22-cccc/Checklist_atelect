@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Чек-лист УЗ-мониторинга</title>
+  <title>Чек-лист УЗ-мониторинга ателектазов</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     body {
@@ -52,212 +52,23 @@
   <!-- Шаг 1: Исходные данные -->
   <div id="step1" class="section">
     <h2>Исходные данные</h2>
-    <label for="block_select">Выберите блок:</label>
+    <label for="block_select">Выберите исследователя:</label>
     <select id="block_select">
-      <option value="1">Блок 1 Базовый протокол</option>
-      <option value="2">Блок 2 Продвинутый протокол</option>
-      <option value="3">Блок 3 ЭХОКГ</option>
-      <option value="4">Блок 4 Полный протокол</option>
-      <option value="5">Блок 5 УЗИ лёгких</option>
+      <option value="1">Щепарев</option>
+      <option value="2">Литвинов</option>
+      <option value="3">Мухаммалиева</option>
     </select>
 
     <label for="patient_id">Номер И/Б (ID пациента):</label>
     <input type="text" id="patient_id" placeholder="ID пациента">
 
-    <label for="patient_age">Возраст пациента:</label>
-    <input type="number" id="patient_age" placeholder="Лет">
+    <label for="patient_age">Ф.И.О. пациента:</label>
+    <input type="number" id="patient_name" placeholder="">
 
     <button type="button" id="step1_next">Далее</button>
   </div>
 
-  <!-- Шаг 2: Блок 1 -->
-  <div id="form1" class="section hidden">
-    <h2>Блок 1: Базовый протокол</h2>
-
-    <!-- IJV -->
-    <h3>Вариабельность диаметра внутренней яремной вены при дыхании</h3>
-    <label for="ven_max">Max (мм):</label>
-    <input type="number" id="ven_max" step="0.1">
-    <label for="ven_min">Min (мм):</label>
-    <input type="number" id="ven_min" step="0.1">
-    <p id="ven_ratio_result" class="result"></p>
-    <label><input type="checkbox" id="ven_error"> Технические погрешности</label>
-
-    <!-- CCA -->
-    <h3>Вариабельность пиковой скорости в общей сонной артерии при дыхании</h3>
-    <label for="car_max">Max (мм):</label>
-    <input type="number" id="car_max" step="0.1">
-    <label for="car_min">Min (мм):</label>
-    <input type="number" id="car_min" step="0.1">
-    <p id="car_ratio_result" class="result"></p>
-    <label><input type="checkbox" id="car_error"> Технические погрешности</label>
-
-    <!-- Flow time -->
-    <h3>Корректированное время потока на общей сонной артерии</h3>
-    <label for="flow_time">Время (мс):</label>
-    <input type="number" id="flow_time" step="0.1">
-    <label for="heart_rate">ЧСС:</label>
-    <input type="number" id="heart_rate">
-    <p id="time_corrected_result" class="result"></p>
-    <label><input type="checkbox" id="time_error"> Технические погрешности</label>
-
-    <!-- Навигация -->
-    <button type="button" class="secondary" id="step1_back">Назад</button>
-    <button type="button" id="submit_button">Завершить</button>
-  </div>
-
-<!-- Шаг 3: Блок 2 -->
-  <div id="form2" class="section hidden">
-    <h2>Блок 2: Продвинутый протокол</h2>
-
-    <!-- IJV -->
-    <h3>Вариабельность диаметра внутренней яремной вены при дыхании</h3>
-    <label for="b2_ven_max">Max (мм):</label>
-    <input type="number" id="b2_ven_max" step="0.1">
-    <label for="b2_ven_min">Min (мм):</label>
-    <input type="number" id="b2_ven_min" step="0.1">
-    <p id="b2_ven_ratio_result" class="result"></p>
-    <label><input type="checkbox" id="b2_ven_error"> Технические погрешности</label>
-
-    <!-- НПВ -->
-    <h3>Вариабельность диаметра нижней полой вены при дыхании</h3>
-    <label for="b2_venp_max">Max (мм):</label>
-    <input type="number" id="b2_venp_max" step="0.1">
-    <label for="b2_venp_min">Min (мм):</label>
-    <input type="number" id="b2_venp_min" step="0.1">
-    <p id="b2_venp_ratio_result" class="result"></p>
-    <label><input type="checkbox" id="b2_venp_error"> Технические погрешности</label>
-    
-    <!-- CCA -->
-    <h3>Вариабельность пиковой скорости в общей сонной артерии при дыхании</h3>
-    <label for="b2_car_max">Max (мм):</label>
-    <input type="number" id="b2_car_max" step="0.1">
-    <label for="b2_car_min">Min (мм):</label>
-    <input type="number" id="b2_car_min" step="0.1">
-    <p id="b2_car_ratio_result" class="result"></p>
-    <label><input type="checkbox" id="b2_car_error"> Технические погрешности</label>
-
-    <!-- Flow time -->
-    <h3>Корректированное время потока на общей сонной артерии</h3>
-    <label for="b2_flow_time">Время (мс):</label>
-    <input type="number" id="b2_flow_time" step="0.1">
-    <label for="b2_heart_rate">ЧСС:</label>
-    <input type="number" id="b2_heart_rate">
-    <p id="b2_time_corrected_result" class="result"></p>
-    <label><input type="checkbox" id="b2_time_error"> Технические погрешности</label>
-
-    <!-- PA -->
-    <h3>Вариабельность пиковой скорости на плечевой артерии при дыхании</h3>
-    <label for="b2_carp_max">Max (мм):</label>
-    <input type="number" id="b2_carp_max" step="0.1">
-    <label for="b2_carp_min">Min (мм):</label>
-    <input type="number" id="b2_carp_min" step="0.1">
-    <p id="b2_carp_ratio_result" class="result"></p>
-    <label><input type="checkbox" id="b2_carp_error"> Технические погрешности</label> 
-    
-    <!-- Навигация -->
-    <button type="button" class="secondary" id="step1_back">Назад</button>
-    <button type="button" id="submit_button">Завершить</button>
-  </div>  
-
-   <!-- Шаг 4: Блок 3 -->
-  <div id="form3" class="section hidden">
-    <h2>Блок 3: ЭХОКГ</h2>
-
-    <!-- VTI_ЛЖ -->
-    <h3>Вариабельность VTI на выносящем тракте ЛЖ при дыхании</h3>
-    <label for="b3_vtil_max">Max (мм):</label>
-    <input type="number" id="b3_vtil_max" step="0.1">
-    <label for="b3_vtil_min">Min (мм):</label>
-    <input type="number" id="b3_vtil_min" step="0.1">
-    <p id="b3_vtil_ratio_result" class="result"></p>
-    <label><input type="checkbox" id="b3_vtil_error"> Технические погрешности</label>
-
-     <!-- VTI_ПЖ -->
-    <h3>Вариабельность VTI на легочной артерии при дыхании</h3>
-    <label for="b3_vtip_max">Max (мм):</label>
-    <input type="number" id="b3_vtip_max" step="0.1">
-    <label for="b3_vtip_min">Min (мм):</label>
-    <input type="number" id="b3_vtip_min" step="0.1">
-    <p id="b3_vtip_ratio_result" class="result"></p>
-    <label><input type="checkbox" id="b3_vtip_error"> Технические погрешности</label>
-    
-    <!-- Навигация -->
-    <button type="button" class="secondary" id="step1_back">Назад</button>
-    <button type="button" id="submit_button">Завершить</button>
-  </div>    
-
-  <!-- Шаг 5: Блок 4 -->
-  <div id="form4" class="section hidden">
-    <h2>Блок 4: Полный протокол</h2>
-
-     <!-- IJV -->
-    <h3>Вариабельность диаметра внутренней яремной вены при дыхании</h3>
-    <label for="b4_ven_max">Max (мм):</label>
-    <input type="number" id="b4_ven_max" step="0.1">
-    <label for="b4_ven_min">Min (мм):</label>
-    <input type="number" id="b4_ven_min" step="0.1">
-    <p id="b4_ven_ratio_result" class="result"></p>
-    <label><input type="checkbox" id="b4_ven_error"> Технические погрешности</label>
-
-    <!-- НПВ -->
-    <h3>Вариабельность диаметра нижней полой вены при дыхании</h3>
-    <label for="b4_venp_max">Max (мм):</label>
-    <input type="number" id="b4_venp_max" step="0.1">
-    <label for="b4_venp_min">Min (мм):</label>
-    <input type="number" id="b4_venp_min" step="0.1">
-    <p id="b4_venp_ratio_result" class="result"></p>
-    <label><input type="checkbox" id="b4_venp_error"> Технические погрешности</label>
-    
-    <!-- CCA -->
-    <h3>Вариабельность пиковой скорости в общей сонной артерии при дыхании</h3>
-    <label for="b4_car_max">Max (мм):</label>
-    <input type="number" id="b4_car_max" step="0.1">
-    <label for="b4_car_min">Min (мм):</label>
-    <input type="number" id="b4_car_min" step="0.1">
-    <p id="b4_car_ratio_result" class="result"></p>
-    <label><input type="checkbox" id="b4_car_error"> Технические погрешности</label>
-
-    <!-- Flow time -->
-    <h3>Корректированное время потока на общей сонной артерии</h3>
-    <label for="b4_flow_time">Время (мс):</label>
-    <input type="number" id="b4_flow_time" step="0.1">
-    <label for="b4_heart_rate">ЧСС:</label>
-    <input type="number" id="b4_heart_rate">
-    <p id="b4_time_corrected_result" class="result"></p>
-    <label><input type="checkbox" id="b4_time_error"> Технические погрешности</label>
-
-    <!-- PA -->
-    <h3>Вариабельность пиковой скорости на плечевой артерии при дыхании</h3>
-    <label for="b4_carp_max">Max (мм):</label>
-    <input type="number" id="b4_carp_max" step="0.1">
-    <label for="b4_carp_min">Min (мм):</label>
-    <input type="number" id="b4_carp_min" step="0.1">
-    <p id="b4_carp_ratio_result" class="result"></p>
-    <label><input type="checkbox" id="b4_carp_error"> Технические погрешности</label> 
-    
-    <!-- VTI_ЛЖ -->
-    <h3>Вариабельность VTI на выносящем тракте ЛЖ при дыхании</h3>
-    <label for="b4_vtil_max">Max (мм):</label>
-    <input type="number" id="b4_vtil_max" step="0.1">
-    <label for="b4_vtil_min">Min (мм):</label>
-    <input type="number" id="b4_vtil_min" step="0.1">
-    <p id="b4_vtil_ratio_result" class="result"></p>
-    <label><input type="checkbox" id="b4_vtil_error"> Технические погрешности</label>
-
-     <!-- VTI_ПЖ -->
-    <h3>Вариабельность VTI на легочной артерии при дыхании</h3>
-    <label for="b4_vtip_max">Max (мм):</label>
-    <input type="number" id="b4_vtip_max" step="0.1">
-    <label for="b4_vtip_min">Min (мм):</label>
-    <input type="number" id="b4_vtip_min" step="0.1">
-    <p id="b4_vtip_ratio_result" class="result"></p>
-    <label><input type="checkbox" id="b4_vtip_error"> Технические погрешности</label>
-    
-    <!-- Навигация -->
-    <button type="button" class="secondary" id="step1_back">Назад</button>
-    <button type="button" id="submit_button">Завершить</button>
-  </div>    
+  
   
   <!-- Блок 5: УЗИ лёгких -->
   <div id="form5" class="section hidden">
